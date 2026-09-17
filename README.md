@@ -162,62 +162,112 @@ MIT License - see LICENSE file
 
 ---
 
-## Spring Batch Diagram Examples (Text Format)
+## Spring Batch Diagram Examples (Mermaid)
 
 ### Sequential Job Flow
-```
-Start Job → Step 1: Count Files → Step 2: Process Data → Step 3: Cleanup → End Job
+```mermaid
+flowchart TD
+    A[Start Job] --> S1[Step 1: Count Files]
+    S1 --> S2[Step 2: Process Data]
+    S2 --> S3[Step 3: Cleanup]
+    S3 --> E[End Job]
 ```
 
 ### Conditional Flow with Exit Status
-```
-Start → Read Products → {Exit Status: COMPLETED → Enrich High Value,
-                           FAILED → Enrich Low Value} → End
+```mermaid
+flowchart TD
+    A[Start] --> R[Read Products]
+    R --> D{Exit Status: COMPLETED}
+    D -- High Value --> E1[Enrich High Value]
+    D -- Low Value --> E2[Enrich Low Value]
+    E1 --> E[End]
+    E2 --> E[End]
 ```
 
 ### JobExecutionDecider (Time-Based Routing)
-```
-Job Start → TimeOfDayDecider → {Hour < 12 → Morning Step,
-                              Hour 12-18 → Afternoon Step,
-                              Hour ≥ 18 → Evening Step} → End
+```mermaid
+flowchart TD
+    A[Job Start] --> D{TimeOfDayDecider}
+    D -- Hour < 12 --> M[Morning Step]
+    D -- Hour 12-18 --> A[Afternoon Step]
+    D -- Hour >= 18 --> E[Evening Step]
+    M --> E
+    A --> E
+    E --> F[End]
 ```
 
 ### Split Flow (Parallel Steps)
-```
-Start → Parallel Step 1 → {Split to Steps 2&3} → Parallel Step 2 & 3 → End
+```mermaid
+flowchart TD
+    A[Start] --> S1[Parallel Step 1]
+    S1 --> B{Branch to Steps 2&3}
+    B --> S2[Step 2]
+    B --> S3[Step 3]
+    S2 --> E[End]
+    S3 --> E[End]
 ```
 
 ### Fault Tolerance: Skip Policy
-```
-Item Read → {Is Item Skippable? Yes → Skip Item, No → Process Item} → Write Item → Continue Chunk
+```mermaid
+flowchart TD
+    R[Item Read] --> D{Is Skippable?}
+    D -- Yes --> S[Skip Item]
+    D -- No --> P[Process Item]
+    S --> W[Write Item]
+    P --> W[Write Item]
+    W --> C[Continue Chunk]
 ```
 
 ### Fault Tolerance: Retry Policy
-```
-Item Read → {Is Item Retryable? Yes → Retry Item (max 3 attempts), 
-              No → Process Item} → Write Item
+```mermaid
+flowchart TD
+    R[Item Read] --> D{Is Retryable?}
+    D -- Yes --> R1[Retry Item: max 3 attempts]
+    D -- No --> P[Process Item]
+    R1 --> W[Write Item]
+    P --> W[Write Item]
 ```
 
 ### Multi-threaded Chunk Processing
-```
-Chunk Start → [Thread 1: Read/Process/Write] → [Thread 2: Read/Process/Write] → 
-[Thread 3: Read/Process/Write] → Chunk Complete
+```mermaid
+flowchart TD
+    S[Chunk Start] --> T1[Thread 1: Read/Process/Write]
+    S --> T2[Thread 2: Read/Process/Write]
+    S --> T3[Thread 3: Read/Process/Write]
+    T1 --> C[Chunk Complete]
+    T2 --> C[Chunk Complete]
+    T3 --> C[Chunk Complete]
 ```
 
 ### Partitioning (Master-Worker)
-```
-Master Step → SimplePartitioner → Grid Size: 5 Workers → 
-[Worker Step 1 through 5] → End
+```mermaid
+flowchart TD
+    M[Master Step] --> P{SimplePartitioner}
+    P -->|Grid: 5 Workers| W1[Worker Step 1]
+    P -->|Grid: 5 Workers| W2[Worker Step 2]
+    P -->|Grid: 5 Workers| W3[Worker Step 3]
+    P -->|Grid: 5 Workers| W4[Worker Step 4]
+    P -->|Grid: 5 Workers| W5[Worker Step 5]
+    W1 --> E[End]
+    W2 --> E[End]
+    W3 --> E[End]
+    W4 --> E[End]
+    W5 --> E[End]
 ```
 
 ### SpEL @StepScope
-```
-Step Execution → ItemReader created per step using jobParameters → 
-Read items (Item-1, Item-2, Item-3...) → Step Completes
+```mermaid
+flowchart TD
+    S[Step Execution] --> R[ItemReader created per step using jobParameters]
+    R --> I[Read items: Item-1, Item-2, Item-3...]
+    I --> C[Step Completes]
 ```
 
 ### SpEL @JobScope
-```
-Job Execution → Job-scoped Bean → Total Items Written Counter → 
-Log Written Count → Job Completes
+```mermaid
+flowchart TD
+    J[Job Execution] --> SB[Job-scoped Bean]
+    SB --> CW[Total Items Written Counter]
+    CW --> L[Log Written Count]
+    L --> F[Job Completes]
 ```
